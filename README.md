@@ -86,3 +86,6 @@ def normalize_gtfs_timezones(gtfs_file, output_file, target_timezone='UTC'):
                 else:
                     output_zip.writestr(file, zip_ref.read(file))
 ```
+
+### Time zone replacement
+It is sometimes happen so that in different gtfs files or merged into one there are different time zones are use. To change it into one, use script replce_string_inzip.py
