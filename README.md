@@ -36,3 +36,53 @@ normalize_gtfs_timezones('oslo.gtfs.zip', 'oslo.normalized.gtfs.zip', 'Europe/Os
 #or just:
 normalize_gtfs_timezones('merged.gtfs.zip', 'merged.gtfs.normalized.zip')
 ```
+
+## Time format
+If you have time format warning then you can instruct pandas difectly to 
+```
+def normalize_gtfs_timezones(gtfs_file, output_file, target_timezone='UTC'):
+    # Load GTFS files
+    with ZipFile(gtfs_file, 'r') as zip_ref:
+        # Read agency.txt to get the feed's time zone
+        agency = pd.read_csv(zip_ref.open('agency.txt'))
+
+        # Read stop_times.txt with explicit dtypes to avoid mixed-type warnings
+        stop_times = pd.read_csv(
+            zip_ref.open('stop_times.txt'),
+            dtype={
+                'trip_id': str,
+                'arrival_time': str,
+                'departure_time': str,
+                'stop_id': str,
+                'stop_sequence': int,
+                'pickup_type': 'Int64',  # Use 'Int64' for nullable integer type
+                'drop_off_type': 'Int64',
+                'shape_dist_traveled': float
+            }
+        )
+
+        # Convert GTFS times to valid datetime strings
+        stop_times['arrival_time'], arrival_day_offset = zip(*stop_times['arrival_time'].apply(convert_gtfs_time))
+        stop_times['departure_time'], departure_day_offset = zip(*stop_times['departure_time'].apply(convert_gtfs_time))
+
+        # Combine time and day offset into a datetime object
+        stop_times['arrival_time'] = pd.to_datetime(stop_times['arrival_time'], format='%H:%M:%S') + pd.to_timedelta(arrival_day_offset, unit='d')
+        stop_times['departure_time'] = pd.to_datetime(stop_times['departure_time'], format='%H:%M:%S') + pd.to_timedelta(departure_day_offset, unit='d')
+
+        # Convert to the target timezone
+        feed_timezone = pytz.timezone(agency['agency_timezone'].iloc[0])
+        stop_times['arrival_time'] = stop_times['arrival_time'].dt.tz_localize(feed_timezone).dt.tz_convert(target_timezone)
+        stop_times['departure_time'] = stop_times['departure_time'].dt.tz_localize(feed_timezone).dt.tz_convert(target_timezone)
+
+        # Format as HH:MM:SS
+        stop_times['arrival_time'] = stop_times['arrival_time'].dt.strftime('%H:%M:%S')
+        stop_times['departure_time'] = stop_times['departure_time'].dt.strftime('%H:%M:%S')
+
+        # Save the normalized GTFS feed
+        with ZipFile(output_file, 'w') as output_zip:
+            for file in zip_ref.namelist():
+                if file == 'stop_times.txt':
+                    output_zip.writestr(file, stop_times.to_csv(index=False))
+                else:
+                    output_zip.writestr(file, zip_ref.read(file))
+```
