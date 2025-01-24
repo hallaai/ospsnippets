@@ -2,7 +2,7 @@
 ## Methods to work with open street map and open street planner data
 
 ### Installation of osmium for conversions
-```
+```sh
 add-apt-repository ppa:osmosisdev/osmosis
 apt update
 apt install osmium-tool -y
@@ -10,18 +10,18 @@ osmium --version
 ```
 
 ### Reduce map to only area you want to use
-```
+```sh
 osmconvert norway-latest.osm.pbf -b=8.4,58.56,11.4,60.24 --complete-ways -o=oslo.osm.pbf
 
 ```
 
 ### Merging open street map .pbf files 
-```
+```sh
 osmium merge finland-latest.osm.pbf norway.osm.pbf -o norway-helsinki.pbf
 ```
 
 ### Merging gtfs transition files 
-```
+```sh
 #apt-get install nodejs zip
 #npm install -g gtfsmerge
 gtfsmerge helsinki.gtfs.zip oslo.gtfs.zip merged.gtft.zip
@@ -30,7 +30,7 @@ gtfsmerge helsinki.gtfs.zip oslo.gtfs.zip merged.gtft.zip
 ### Normalizing transition data
 Converting areas with different time zones requires normalization to create open streen planner data
 Example of usage:
-```
+```python
 from normalize_gtfs_timezones import normalize_gtfs_timezones
 normalize_gtfs_timezones('oslo.gtfs.zip', 'oslo.normalized.gtfs.zip', 'Europe/Oslo')
 #or just:
@@ -39,7 +39,7 @@ normalize_gtfs_timezones('merged.gtfs.zip', 'merged.gtfs.normalized.zip')
 
 ## Time format
 If you have time format warning then you can instruct pandas difectly to 
-```
+```python
 def normalize_gtfs_timezones(gtfs_file, output_file, target_timezone='UTC'):
     # Load GTFS files
     with ZipFile(gtfs_file, 'r') as zip_ref:
