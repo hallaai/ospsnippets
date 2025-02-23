@@ -1,12 +1,25 @@
 # Purpose
 ## Methods to work with open street map and open street planner data
 
+#Need to have one of latest jdk
+```sh
+wget https://download.oracle.com/java/23/latest/jdk-23_linux-x64_bin.deb
+dpkg -i jdk-23_linux-x64_bin.deb
+java --version
+```
+
 ### Installation of osmium for conversions
 ```sh
 add-apt-repository ppa:osmosisdev/osmosis
 apt update
 apt install osmium-tool -y
 osmium --version
+```
+
+## Download area data
+```sh
+wget https://download.geofabrik.de/europe/norway-latest.osm.pbf -O norway.osm.pbf
+wget https://storage.googleapis.com/marduk-production/outbound/gtfs/rb_norway-aggregated-gtfs.zip -O norway.gtfs.zip
 ```
 
 ### Reduce map to only area you want to use
